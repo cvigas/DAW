@@ -70,3 +70,69 @@ INSERT INTO producto VALUES(22,'MacBook Pro M2',1359, 8, 5,2);
 insert into producto values(23,'Samsung Galaxy Book2 Pro',1010, 4, 5, 0);
 INSERT INTO producto VALUES(24,'Monitor 29 LED Full HD',245, 4, 4, 2);
 INSERT INTO producto VALUES(25,'Memoria DDR5 32GB',129, 6, 2, 1);
+
+-- Lista los productos (codigo, nombre y precio) que su precio es superior a 500€
+select codigo, nombre, precio from producto
+where precio>500;
+
+-- Lista los productos (codigo, nombre y stock) de los cuales no tenemos stock.
+select codigo, nombre, stock from producto
+where stock<=0;
+
+-- Lista los productos que en su nombre contienen una palabra que acaba con las letras GB.
+select nombre from producto 
+where nombre like '%GB';
+
+/*Lista los productos con precio inferior a 300€ y un stock superior a 2 unidades ordenado 
+por precio de forma decreciente. */
+select nombre, precio, stock from producto
+where precio<300 and stock>2
+order by precio desc;
+
+-- Lista los productos de la categoría Tablet y fabricante Samsung.
+select producto.nombre, categoria.nombre_cat, fabricante.nombre_fa
+from producto inner join categoria on producto.codigo_cat=categoria.codigo_cat
+inner join fabricante on producto.codigo_fa=fabricante.codigo_fa
+where categoria.nombre_cat='Tablet' and fabricante.nombre_fa='Samsung';
+
+/* Muestra cuántos productos tenemos de cada categoría. Las categorías que no tienen productos 
+también deben aparecer.*/
+select categoria.codigo_cat as 'Codigo', categoria.nombre_cat as 'Categoria', SUM(producto.stock) as 'Suma'
+from producto right outer join categoria on categoria.codigo_cat=producto.codigo_cat
+group by categoria.codigo_cat;
+
+-- Muestra los fabricantes de los que tenemos 3 o más productos almacenados.
+select fabricante.nombre_fa, sum(producto.stock)
+from producto inner join fabricante on producto.codigo_fa=fabricante.codigo_fa
+where producto.stock>=3
+group by fabricante.nombre_fa;
+
+-- Muestra el precio medio de cada categoría (sólo debe aparecer el nombre de la categoría y el precio).
+select categoria.nombre_cat, avg(producto.precio)
+from producto inner join categoria on producto.codigo_cat=categoria.codigo_cat
+group by categoria.nombre_cat; 
+
+-- Lista el nombre, el precio y el precio incrementado en un 10% de todos los productos del fabricante Samsung.
+select producto.nombre, producto.precio, producto.precio + (producto.precio * 0.1) as 'Precio incrementado'
+from producto inner join fabricante on producto.codigo_fa=fabricante.codigo_fa
+where fabricante.nombre_fa in ('Samsung');
+
+-- Muestra cuál es el producto más caro del fabricante Apple con toda la información de ese producto.
+select * from producto
+where precio=(
+select max(producto.precio)
+from producto inner join fabricante on producto.codigo_fa=fabricante.codigo_fa
+where fabricante.nombre_fa in('Apple'));
+
+-- Lista los productos de los cuales tenemos un stock superior al stock del producto Disco SSD 1 TB.
+select nombre, stock from producto
+where stock>(
+select stock from producto 
+where nombre in ('Disco SSD 1 TB'));
+
+-- Lista los procesadores cuyo precio es superior al precio medio de los productos de la categoría de procesadores.
+select producto.nombre, producto.precio from 
+producto inner join categoria on producto.codigo_cat=categoria.codigo_cat
+where categoria.nombre_cat in ('Procesadores') and producto.precio>(select avg(producto.precio) 
+	from producto inner join categoria on producto.codigo_cat=categoria.codigo_cat 
+	where categoria.nombre_cat in ('Procesadores'));
